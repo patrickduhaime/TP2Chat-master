@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -18,32 +15,39 @@ namespace Server
 
         public void Start()
         {
-            TcpListener listener = new TcpListener(IPAddress.Parse("0.0.0.0"),8080);
+            TcpListener listener = new TcpListener(IPAddress.Parse("0.0.0.0"), 8080);
             //TODO insert MOTD
             Console.WriteLine("Serveur ouvert.");
             listener.Start();
 
+            //Listener principal gérant les connexions et créant un thread pour chaque nouveau client.
             while (true)
             {
                 TcpClient client = listener.AcceptTcpClient();
                 StreamReader sr = new StreamReader(client.GetStream());
-                //StreamWriter sw = new StreamWriter(client.GetStream());
-                //Console.WriteLine("Hello ");
+                StreamWriter sw = new StreamWriter(client.GetStream());
                 try
                 {
+                    //Écoute le socket.
                     string request = sr.ReadLine();
-                    //Console.WriteLine(request);
-                    string[] elements = request.Split(';');
+                    string[] elements = request.Split(new string[] { ";|&|;" }, StringSplitOptions.None);
 
                     if (elements[0] != "Connexion")
                         continue;
 
-                    Console.WriteLine("Connexion de " + elements[1]);
-                    dictUsers.Add(elements[1], client);
-                    //sw.WriteLine("Connexion;Connexion de " + elements[1]);
-                    //sw.Flush();
-                    new Thread(() => ServerListener(elements[1])).Start();
 
+                    if (!dictUsers.ContainsKey(elements[1]))
+                    {
+
+                        Console.WriteLine("Connexion de " + elements[1]);
+                        dictUsers.Add(elements[1], client);
+                        new Thread(() => ServerListener(elements[1])).Start();
+                        sw.WriteLine("Accepte");
+                    }
+                    else
+                        sw.WriteLine("Refus");
+
+                    sw.Flush();
                 }
                 catch (Exception e) { Console.WriteLine(e); }
             }
@@ -51,37 +55,32 @@ namespace Server
 
         private void ServerListener(string username)
         {
+            //Lors de la connexion, envoie au nouveau utilisateur la liste des utilisateurs déjà connectés.
             TcpClient client = dictUsers[username];
             string list = "";
             foreach (KeyValuePair<string, TcpClient> entry in dictUsers)
-                if(entry.Key != username)
+                if (entry.Key != username)
                     list += entry.Key + ":";
 
-            if(list != "")
+            if (list != "")
                 foreach (KeyValuePair<string, TcpClient> entry in dictUsers)
                 {
                     StreamWriter sw = new StreamWriter(entry.Value.GetStream());
-                    if(entry.Key != username)
+                    if (entry.Key != username)
                         sw.WriteLine("Connexion;" + username);
                     else
                         sw.WriteLine("List;" + list.Remove(list.Length - 1));
                     sw.Flush();
                 }
 
-            /*StreamWriter sw2 = new StreamWriter(client.GetStream());
-            string list = "";
-            foreach (KeyValuePair<string, TcpClient> entry in dictUsers)
-                list += entry.Key + ":";
-            sw2.WriteLine("List;" + list.Remove(list.Length - 1));
-            sw2.Flush();*/
-
+            //Écoute le client.
             while (true)
             {
                 try
                 {
                     StreamReader sr = new StreamReader(client.GetStream());
                     string request = sr.ReadLine();
-                    string[] elements = request.Split(';');
+                    string[] elements = request.Split(new string[] { ";|&|;" }, StringSplitOptions.None);
                     switch (elements[0])
                     {
                         case "Message":
@@ -89,7 +88,7 @@ namespace Server
                             string[] destinataires = elements[1].Split(':');
                             foreach (string dest in destinataires)
                             {
-                                if(dictUsers[dest] == null)
+                                if (dictUsers[dest] == null)
                                     continue;
 
                                 StreamWriter sw = new StreamWriter(dictUsers[dest].GetStream());
@@ -115,15 +114,8 @@ namespace Server
                             break;
 
                     }
-
                 }
-                catch (Exception)
-                {
-                    //client.GetStream().Close();
-                    //client.Close();
-                    return;
-                }
-
+                catch (Exception e) { Console.WriteLine(e); return; }
             }
         }
     }

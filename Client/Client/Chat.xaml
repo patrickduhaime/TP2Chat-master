@@ -19,8 +19,6 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <!--<TextBlock Text="{Binding Path=Name}" />
-                            <TextBlock Text="{Binding Path=Age}" />-->
                             <TextBlock Text="{Binding}" />
                         </StackPanel>
                     </DataTemplate>
@@ -40,6 +38,5 @@
                 </Style>
             </RichTextBox.Resources>
         </RichTextBox>
-        <!--TextWrapping="Wrap"-->
     </DockPanel>
 </Window>
