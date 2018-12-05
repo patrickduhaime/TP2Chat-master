@@ -13,12 +13,24 @@ namespace Server
 
         public MainListener() { }
 
+        private void motd()
+        { Console.WriteLine(
+            "\n\nWelcome to the TP2Chat server\n\n\n\nYou must use TP2Chat client to connect to this server" +
+            "\n\n\n\n\nUNAUTHORIZED ACCESS TO THIS DEVICE IS PROHIBITED" +"\n" +
+            "You must have explicit, authorized permission to access or configure this device\n" +
+            "Unauthorized attempts and actions to access or use this system may result\n" +
+            "in civiland/or criminal penalties.\n\n" +
+            "All activities performed on this device are logged and monitored."); }
+
         public void Start()
         {
             TcpListener listener = new TcpListener(IPAddress.Parse("0.0.0.0"), 8080);
-            //TODO insert MOTD
-            Console.WriteLine("Serveur ouvert.");
+
+            //call MOTD
+            motd();
+
             listener.Start();
+            LogHelper.Log("Listener started");
 
             //Listener principal gérant les connexions et créant un thread pour chaque nouveau client.
             while (true)
