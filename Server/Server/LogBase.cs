@@ -22,7 +22,10 @@ namespace Server
             {
                 using (StreamWriter streamWriter = new StreamWriter(filePath,true))
                 {
-                    streamWriter.WriteLine(message);
+                    var time = DateTime.Now;
+                    string formattedTime = time.ToString("yyyy/MM/dd  hh:mm:ss");
+
+                    streamWriter.WriteLine(message + "  " + formattedTime);
                     streamWriter.Close();
                 }
             }

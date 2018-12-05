@@ -30,7 +30,7 @@ namespace Server
             motd();
 
             listener.Start();
-            LogHelper.Log("Listener started");
+            LogHelper.Log("Server started");
 
             //Listener principal gérant les connexions et créant un thread pour chaque nouveau client.
             while (true)
@@ -55,6 +55,8 @@ namespace Server
                         dictUsers.Add(elements[1], client);
                         new Thread(() => ServerListener(elements[1])).Start();
                         sw.WriteLine("Accepte");
+                        LogHelper.Log("Connexion de " + elements[1]);
+
                     }
                     else
                         sw.WriteLine("Refus");
