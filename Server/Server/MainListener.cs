@@ -55,12 +55,14 @@ namespace Server
                         dictUsers.Add(elements[1], client);
                         new Thread(() => ServerListener(elements[1])).Start();
                         sw.WriteLine("Accepte");
-                        LogHelper.Log("Connexion de " + elements[1]);
+                        LogHelper.Log("Access granted to " + elements[1] + " from IP: " + IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString()));
 
                     }
                     else
+                    {
                         sw.WriteLine("Refus");
-
+                        LogHelper.Log("Access denied to " + elements[1] + " from IP: " + IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString()));
+                    }
                     sw.Flush();
                 }
                 catch (Exception e) { Console.WriteLine(e); }
