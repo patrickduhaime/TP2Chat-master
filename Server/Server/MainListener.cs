@@ -24,11 +24,11 @@ namespace Server
 
         public void Start()
         {
-            TcpListener listener = new TcpListener(IPAddress.Parse("0.0.0.0"), 8080);
-
-            //call MOTD
+            //afficher le  MOTD
             motd();
 
+            //le serveur ecoute sur 0.0.0.0 port 8080
+            TcpListener listener = new TcpListener(IPAddress.Parse("0.0.0.0"), 8080);
             listener.Start();
             LogHelper.Log("Server started");
 
@@ -104,8 +104,14 @@ namespace Server
                         case "Message":
                             Console.WriteLine("Message reçu de " + username);
                             string[] destinataires = elements[1].Split(':');
+                            String sentTo = null;
                             foreach (string dest in destinataires)
                             {
+                                if (sentTo != null)
+                                    sentTo = sentTo + "," + dest;
+                                else
+                                    sentTo = dest;
+
                                 if (dictUsers[dest] == null)
                                     continue;
 
@@ -114,6 +120,8 @@ namespace Server
                                 sw.Flush();
                                 Console.WriteLine("Message envoyé à " + dest);
                             }
+                            LogHelper.Log("Message sent from: " + "\"" + username + "\"" + " To: " + "\"" + sentTo + "\"");
+                            LogHelper.Log("Message body: " + "\""+ elements[2] + "\"");
                             break;
 
                         case "Deconnexion":
