@@ -55,15 +55,16 @@ namespace Server
                         dictUsers.Add(elements[1], client);
                         new Thread(() => ServerListener(elements[1])).Start();
                         sw.WriteLine("Accepte");
+                        sw.Flush();
                         LogHelper.Log("Access granted to " + elements[1] + " from IP: " + IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString()));
 
                     }
                     else
                     {
                         sw.WriteLine("Refus");
+                        sw.Flush();
                         LogHelper.Log("Access denied to " + elements[1] + " from IP: " + IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString()));
                     }
-                    sw.Flush();
                 }
                 catch (Exception e) { Console.WriteLine(e); }
             }
@@ -122,6 +123,7 @@ namespace Server
                                 sw.WriteLine("Deconnexion;" + username);
                                 sw.Flush();
                             }
+                            LogHelper.Log("Closing communication with " + username + " from IP: " + IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString()));
                             dictUsers.Remove(username);
                             Console.WriteLine(username + " déconnecté");
                             return;

@@ -36,7 +36,9 @@ namespace Client
                 Show();
             }
             else
+            {
                 lblError.Content = "Ce nom est déjà utilisé.";
+            }
         }
     }
 }
