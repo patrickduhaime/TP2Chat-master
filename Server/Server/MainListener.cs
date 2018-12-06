@@ -57,7 +57,6 @@ namespace Server
                         sw.WriteLine("Accepte");
                         sw.Flush();
                         LogHelper.Log("Access granted to " + elements[1] + " from IP: " + IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString()));
-
                     }
                     else
                     {
@@ -66,7 +65,9 @@ namespace Server
                         LogHelper.Log("Access denied to " + elements[1] + " from IP: " + IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString()));
                     }
                 }
-                catch (Exception e) { Console.WriteLine(e); }
+                catch (Exception e) { Console.WriteLine(e);
+                    client.Close();
+                }
             }
         }
 

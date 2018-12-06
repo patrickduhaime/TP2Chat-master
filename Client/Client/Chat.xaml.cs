@@ -56,7 +56,7 @@ namespace Client
                 return;
             }
 
-            SendMessage("Message;" + list.Remove(list.Length - 1) + ";|&|;" + tbMessage.Text);
+            SendMessage("Message;|&|;" + list.Remove(list.Length - 1) + ";|&|;" + tbMessage.Text);
             tbMessage.Dispatcher.Invoke(new UpdateTextCallback(UpdateText), new object[] { "À " + listAff.Remove(listAff.Length - 2, 2) + " : ", Brushes.Red });
             tbMessage.Dispatcher.Invoke(new UpdateTextCallback(UpdateText), new object[] { tbMessage.Text + "\n", Brushes.Black });
             tbMessage.Text = "";
