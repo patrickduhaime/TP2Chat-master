@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Net.Sockets;
@@ -6,6 +7,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 
 
@@ -40,8 +42,21 @@ namespace Client
             listener.Start();
         }
 
+        private void OnKeyDownHandler(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Return)
+                btnSendMessage_Click(sender, e);
+        }
+
         private void btnSendMessage_Click(object sender, RoutedEventArgs e)
         {
+            if (tbMessage.Text == "list")
+            {
+                SendMessage("Liste");
+                tbMessage.Text = "";
+                return;
+            }
+
             string list = "", listAff = "";
             foreach (string dest in listUsers.SelectedItems)
             {
@@ -51,7 +66,7 @@ namespace Client
 
             if (list == "")
             {
-                string errorMessage = "Aucun destinataire n'est sélectionné.";
+                string errorMessage = "Aucun destinataire n'est sélectionné.\n";
                 tbMessage.Dispatcher.Invoke(new UpdateTextCallback(UpdateText), new object[] { errorMessage, Brushes.Purple });
                 return;
             }
@@ -68,7 +83,7 @@ namespace Client
             {
                 StreamReader sr = new StreamReader(client.GetStream());
                 string data = sr.ReadLine();
-                string[] elements = data.Split(';');
+                string[] elements = data.Split(new string[] { ";|&|;" }, StringSplitOptions.None);
                 switch (elements[0])
                 {
                     case "Message":
@@ -87,6 +102,10 @@ namespace Client
                         lock (lockObject)
                             foreach (string user in users)
                                 Items.Add(user);
+                        break;
+
+                    case "Liste":
+                        tbMessage.Dispatcher.Invoke(new UpdateTextCallback(UpdateText), new object[] { "Utilisateurs connectés :  " + elements[1] + "\n", Brushes.Green });
                         break;
 
                     case "Deconnexion":

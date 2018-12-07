@@ -65,7 +65,7 @@ namespace Server
                         LogHelper.Log("Access denied to " + elements[1] + " from IP: " + IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString()));
                     }
                 }
-                catch (Exception e) { Console.WriteLine(e);
+                catch (Exception e) { Console.WriteLine(e); Console.WriteLine("\n\nerreur server line 68");
                     client.Close();
                 }
             }
@@ -85,9 +85,9 @@ namespace Server
                 {
                     StreamWriter sw = new StreamWriter(entry.Value.GetStream());
                     if (entry.Key != username)
-                        sw.WriteLine("Connexion;" + username);
+                        sw.WriteLine("Connexion;|&|;" + username);
                     else
-                        sw.WriteLine("List;" + list.Remove(list.Length - 1));
+                        sw.WriteLine("List;|&|;" + list.Remove(list.Length - 1));
                     sw.Flush();
                 }
 
@@ -116,7 +116,7 @@ namespace Server
                                     continue;
 
                                 StreamWriter sw = new StreamWriter(dictUsers[dest].GetStream());
-                                sw.WriteLine("Message;" + username + ";" + elements[2]);
+                                sw.WriteLine("Message;|&|;" + username + ";|&|;" + elements[2]);
                                 sw.Flush();
                                 Console.WriteLine("Message envoyé à " + dest);
                             }
@@ -129,20 +129,34 @@ namespace Server
                             foreach (KeyValuePair<string, TcpClient> entry in dictUsers)
                             {
                                 StreamWriter sw = new StreamWriter(entry.Value.GetStream());
-                                sw.WriteLine("Deconnexion;" + username);
+                                sw.WriteLine("Deconnexion;|&|;" + username);
                                 sw.Flush();
                             }
                             LogHelper.Log("Closing communication with " + username + " from IP: " + IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString()));
                             dictUsers.Remove(username);
                             Console.WriteLine(username + " déconnecté");
+                            username = null;
                             return;
+
+                        case "Liste":
+                            string list2 = "";
+                            foreach (KeyValuePair<string, TcpClient> entry in dictUsers)
+                                if (entry.Key != username)
+                                    list2 += entry.Key + ":";
+                            if (list2 == "")
+                                break;
+                            StreamWriter sw2 = new StreamWriter(client.GetStream());
+                            sw2.WriteLine("Liste;|&|;" + list2.Remove((list2.Length - 1)));
+                            sw2.Flush();
+                            Console.WriteLine("List of users sent to " + username);
+                            break;
 
                         default:
                             break;
 
                     }
                 }
-                catch (Exception e) { Console.WriteLine(e); return; }
+                catch (Exception e) { Console.WriteLine(e); Console.WriteLine("\n\nerreur serveur line 158"); return; }
             }
         }
     }

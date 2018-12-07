@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Client"
         mc:Ignorable="d"
-        Title="Chat" Height="450" Width="800" WindowStartupLocation="CenterScreen" Closing="ChatClosing">
+        Title="Chat" Height="450" Width="800" WindowStartupLocation="CenterScreen" Closing="ChatClosing"  KeyDown="OnKeyDownHandler">
     <DockPanel>
         
         <WrapPanel Margin="20" DockPanel.Dock="Top" HorizontalAlignment="Right">
