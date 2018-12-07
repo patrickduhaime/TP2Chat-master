@@ -81,12 +81,17 @@ namespace Server
             if (list != "")
                 foreach (KeyValuePair<string, TcpClient> entry in dictUsers)
                 {
-                    StreamWriter sw = new StreamWriter(entry.Value.GetStream());
-                    if (entry.Key != username)
-                        sw.WriteLine("Connexion;|&|;" + username);
+                    if (entry.Value.Connected)
+                    {
+                        StreamWriter sw = new StreamWriter(entry.Value.GetStream());
+                        if (entry.Key != username)
+                            sw.WriteLine("Connexion;|&|;" + username);
+                        else
+                            sw.WriteLine("List;|&|;" + list.Remove(list.Length - 1));
+                        sw.Flush();
+                    }
                     else
-                        sw.WriteLine("List;|&|;" + list.Remove(list.Length - 1));
-                    sw.Flush();
+                        dictUsers.Remove(entry.Key);
                 }
 
             //Écoute le client.
