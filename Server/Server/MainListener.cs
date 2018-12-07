@@ -20,7 +20,7 @@ namespace Server
             "You must have explicit, authorized permission to access or configure this device\n" +
             "Unauthorized attempts and actions to access or use this system may result\n" +
             "in civiland/or criminal penalties.\n\n" +
-            "All activities performed on this device are logged and monitored."); }
+            "All activities performed on this device are logged and monitored.\n\n\n"); }
 
         public void Start()
         {
@@ -50,8 +50,6 @@ namespace Server
 
                     if (!dictUsers.ContainsKey(elements[1]))
                     {
-
-                        Console.WriteLine("Connexion de " + elements[1]);
                         dictUsers.Add(elements[1], client);
                         new Thread(() => ServerListener(elements[1])).Start();
                         sw.WriteLine("Accepte");
@@ -65,7 +63,7 @@ namespace Server
                         LogHelper.Log("Access denied to " + elements[1] + " from IP: " + IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString()));
                     }
                 }
-                catch (Exception e) { Console.WriteLine(e); Console.WriteLine("\n\nerreur server line 68");
+                catch (Exception e) { Console.WriteLine(e);
                     client.Close();
                 }
             }
@@ -102,7 +100,6 @@ namespace Server
                     switch (elements[0])
                     {
                         case "Message":
-                            Console.WriteLine("Message reçu de " + username);
                             string[] destinataires = elements[1].Split(':');
                             String sentTo = null;
                             foreach (string dest in destinataires)
@@ -120,7 +117,6 @@ namespace Server
                                     StreamWriter sw = new StreamWriter(dictUsers[dest].GetStream());
                                     sw.WriteLine("Message;|&|;" + username + ";|&|;" + elements[2]);
                                     sw.Flush();
-                                    Console.WriteLine("Message envoyé à " + dest);
                                 }
                                 else
                                     dictUsers.Remove(dest);
@@ -130,7 +126,6 @@ namespace Server
                             break;
 
                         case "Deconnexion":
-                            Console.WriteLine("Déconnexion de " + username);
                             foreach (KeyValuePair<string, TcpClient> entry in dictUsers)
                             {
                                 if (entry.Value.Connected)
@@ -144,7 +139,6 @@ namespace Server
                             }
                             LogHelper.Log("Closing communication with " + username + " from IP: " + IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString()));
                             dictUsers.Remove(username);
-                            Console.WriteLine(username + " déconnecté");
                             username = null;
                             return;
 
@@ -163,7 +157,6 @@ namespace Server
 
                         default:
                             break;
-
                     }
                 }
                 catch (Exception e) { Console.WriteLine(e); return; }
