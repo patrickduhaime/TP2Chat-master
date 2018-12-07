@@ -166,22 +166,7 @@ namespace Server
 
                     }
                 }
-                catch (Exception e) { Console.WriteLine(e); Console.WriteLine("\n\nerreur serveur line 158");
-                    Console.WriteLine("Déconnexion de " + username + " in catch");
-                    dictUsers.Remove(username);
-                    foreach (KeyValuePair<string, TcpClient> entry in dictUsers)
-                    {
-                        if(entry.Value.Connected)
-                        {
-                            StreamWriter sw = new StreamWriter(entry.Value.GetStream());
-                            sw.WriteLine("Deconnexion;|&|;" + username + " in catch");
-                            sw.Flush();
-                        }
-                    }
-                    LogHelper.Log("Closing communication with " + username + " from IP: " + IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString()));
-                    Console.WriteLine(username + " déconnecté");
-                    username = null;
-                    return; }
+                catch (Exception e) { Console.WriteLine(e); return; }
             }
         }
     }
