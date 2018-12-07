@@ -107,7 +107,7 @@ namespace Server
                             String sentTo = null;
                             foreach (string dest in destinataires)
                             {
-                                if (sentTo != null)
+                                if(sentTo != null)
                                     sentTo = sentTo + "," + dest;
                                 else
                                     sentTo = dest;
@@ -115,10 +115,15 @@ namespace Server
                                 if (dictUsers[dest] == null)
                                     continue;
 
-                                StreamWriter sw = new StreamWriter(dictUsers[dest].GetStream());
-                                sw.WriteLine("Message;|&|;" + username + ";|&|;" + elements[2]);
-                                sw.Flush();
-                                Console.WriteLine("Message envoyé à " + dest);
+                                if (dictUsers[dest].Connected)
+                                {
+                                    StreamWriter sw = new StreamWriter(dictUsers[dest].GetStream());
+                                    sw.WriteLine("Message;|&|;" + username + ";|&|;" + elements[2]);
+                                    sw.Flush();
+                                    Console.WriteLine("Message envoyé à " + dest);
+                                }
+                                else
+                                    dictUsers.Remove(dest);
                             }
                             LogHelper.Log("Message sent from: " + "\"" + username + "\"" + " To: " + "\"" + sentTo + "\"");
                             LogHelper.Log("Message body: " + "\""+ elements[2] + "\"");
@@ -128,9 +133,14 @@ namespace Server
                             Console.WriteLine("Déconnexion de " + username);
                             foreach (KeyValuePair<string, TcpClient> entry in dictUsers)
                             {
-                                StreamWriter sw = new StreamWriter(entry.Value.GetStream());
-                                sw.WriteLine("Deconnexion;|&|;" + username);
-                                sw.Flush();
+                                if (entry.Value.Connected)
+                                {
+                                    StreamWriter sw = new StreamWriter(entry.Value.GetStream());
+                                    sw.WriteLine("Deconnexion;|&|;" + username);
+                                    sw.Flush();
+                                }
+                                else
+                                    dictUsers.Remove(entry.Key);
                             }
                             LogHelper.Log("Closing communication with " + username + " from IP: " + IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString()));
                             dictUsers.Remove(username);
@@ -156,7 +166,22 @@ namespace Server
 
                     }
                 }
-                catch (Exception e) { Console.WriteLine(e); Console.WriteLine("\n\nerreur serveur line 158"); return; }
+                catch (Exception e) { Console.WriteLine(e); Console.WriteLine("\n\nerreur serveur line 158");
+                    Console.WriteLine("Déconnexion de " + username + " in catch");
+                    dictUsers.Remove(username);
+                    foreach (KeyValuePair<string, TcpClient> entry in dictUsers)
+                    {
+                        if(entry.Value.Connected)
+                        {
+                            StreamWriter sw = new StreamWriter(entry.Value.GetStream());
+                            sw.WriteLine("Deconnexion;|&|;" + username + " in catch");
+                            sw.Flush();
+                        }
+                    }
+                    LogHelper.Log("Closing communication with " + username + " from IP: " + IPAddress.Parse(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString()));
+                    Console.WriteLine(username + " déconnecté");
+                    username = null;
+                    return; }
             }
         }
     }

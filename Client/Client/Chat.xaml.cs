@@ -138,6 +138,7 @@ namespace Client
         {
             listener.Abort();
             SendMessage("Deconnexion");
+            //System.Threading.Thread.Sleep(500);
             client.GetStream().Close();
             client.Close();
         }
