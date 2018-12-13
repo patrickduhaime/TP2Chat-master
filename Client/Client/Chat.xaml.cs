@@ -21,6 +21,7 @@ namespace Client
         TcpClient client;
         Thread listener;
         object lockObject;
+        private static bool serverDown = false;
 
         public ObservableCollection<string> Items { get; set; }
 
@@ -79,49 +80,69 @@ namespace Client
 
         private void ServerListener()
         {
-            while (true)
+            bool isOpen = true;
+            while (isOpen)
             {
                 StreamReader sr = new StreamReader(client.GetStream());
-                string data = sr.ReadLine();
-                string[] elements = data.Split(new string[] { ";|&|;" }, StringSplitOptions.None);
-                switch (elements[0])
+                try
                 {
-                    case "Message":
-                        tbMessage.Dispatcher.Invoke(new UpdateTextCallback(UpdateText), new object[] { "De " + elements[1] + " : ", Brushes.Blue });
-                        tbMessage.Dispatcher.Invoke(new UpdateTextCallback(UpdateText), new object[] { elements[2] + "\n", Brushes.Black });
-                        break;
+                    string data = sr.ReadLine();
+                    string[] elements = data.Split(new string[] {";|&|;"}, StringSplitOptions.None);
+                    switch (elements[0])
+                    {
+                        case "Message":
+                            tbMessage.Dispatcher.Invoke(new UpdateTextCallback(UpdateText),
+                                new object[] {"De " + elements[1] + " : ", Brushes.Blue});
+                            tbMessage.Dispatcher.Invoke(new UpdateTextCallback(UpdateText),
+                                new object[] {elements[2] + "\n", Brushes.Black});
+                            break;
 
-                    case "Connexion":
-                        lock (lockObject)
-                            Items.Add(elements[1]);
-                        tbMessage.Dispatcher.Invoke(new UpdateTextCallback(UpdateText), new object[] { "Connexion de " + elements[1] + "\n", Brushes.Green });
-                        break;
+                        case "Connexion":
+                            lock (lockObject)
+                                Items.Add(elements[1]);
+                            tbMessage.Dispatcher.Invoke(new UpdateTextCallback(UpdateText),
+                                new object[] {"Connexion de " + elements[1] + "\n", Brushes.Green});
+                            break;
 
-                    case "List":
-                        string[] users = elements[1].Split(':');
-                        lock (lockObject)
-                            foreach (string user in users)
-                                Items.Add(user);
-                        break;
+                        case "List":
+                            string[] users = elements[1].Split(':');
+                            lock (lockObject)
+                                foreach (string user in users)
+                                    Items.Add(user);
+                            break;
 
-                    case "Liste":
-                        tbMessage.Dispatcher.Invoke(new UpdateTextCallback(UpdateText), new object[] { "Utilisateurs connectés :  " + elements[1] + "\n", Brushes.Green });
-                        break;
+                        case "Liste":
+                            tbMessage.Dispatcher.Invoke(new UpdateTextCallback(UpdateText),
+                                new object[] {"Utilisateurs connectés :  " + elements[1] + "\n", Brushes.Green});
+                            break;
 
-                    case "Deconnexion":
-                        lock (lockObject)
-                            Items.Remove(elements[1]);
-                        tbMessage.Dispatcher.Invoke(new UpdateTextCallback(UpdateText), new object[] { "Déconnexion de " + elements[1] + "\n", Brushes.Green });
-                        break;
+                        case "Deconnexion":
+                            lock (lockObject)
+                                Items.Remove(elements[1]);
+                            tbMessage.Dispatcher.Invoke(new UpdateTextCallback(UpdateText),
+                                new object[] {"Déconnexion de " + elements[1] + "\n", Brushes.Green});
+                            break;
 
-                    default:
-                        break;
+                    }
+                }
+                catch (IOException)
+                {
+                    isOpen = false;
+                    Dispatcher.Invoke(new ServerDownCall(ServerIsDown));
                 }
             }
         }
 
+        public delegate void ServerDownCall();
 
         public delegate void UpdateTextCallback(string message, SolidColorBrush color);
+
+        private void ServerIsDown()
+        {
+            serverDown = true;
+            MessageBox.Show("Le serveur a été fermé.");
+            Close();
+        }
 
         private void UpdateText(string message, SolidColorBrush color)
         {
@@ -136,6 +157,9 @@ namespace Client
 
         private void ChatClosing(object sender, CancelEventArgs e)
         {
+            if (serverDown)
+                return;
+
             listener.Abort();
             SendMessage("Deconnexion");
             client.GetStream().Close();
